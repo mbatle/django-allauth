@@ -122,6 +122,7 @@ METADATA = dict(
                       'python3-openid >= 3.0.8',
                       'requests-oauthlib >= 0.3.0',
                       'requests',
+                      'snoop',
                       'pyjwt[crypto] >=1.7'],
     include_package_data=True,
     classifiers=[

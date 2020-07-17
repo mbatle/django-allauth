@@ -1,6 +1,7 @@
 import json
 import requests
 from datetime import timedelta
+import snoop
 
 from django.http import HttpResponseRedirect
 from django.urls import reverse
@@ -31,6 +32,7 @@ class AppleOAuth2Adapter(OAuth2Adapter):
     authorize_url = "https://appleid.apple.com/auth/authorize"
     public_key_url = "https://appleid.apple.com/auth/keys"
 
+    @snoop
     def _get_apple_public_key(self, kid):
         response = requests.get(self.public_key_url)
         response.raise_for_status()
@@ -43,6 +45,7 @@ class AppleOAuth2Adapter(OAuth2Adapter):
             if d["kid"] == kid:
                 return d
 
+    @snoop
     def get_public_key(self, id_token):
         """
         Get the public key which matches the `kid` in the id_token header.
@@ -53,10 +56,12 @@ class AppleOAuth2Adapter(OAuth2Adapter):
         public_key = jwt.algorithms.RSAAlgorithm.from_jwk(json.dumps(apple_public_key))
         return public_key
 
+    @snoop
     def get_client_id(self, provider):
         app = SocialApp.objects.get(provider=provider.id)
         return [aud.strip() for aud in app.client_id.split(",")]
 
+    @snoop
     def get_verified_identity_data(self, id_token):
         provider = self.get_provider()
         allowed_auds = self.get_client_id(provider)
@@ -76,6 +81,7 @@ class AppleOAuth2Adapter(OAuth2Adapter):
         except jwt.PyJWTError as e:
             raise OAuth2Error("Invalid id_token") from e
 
+    @snoop
     def parse_token(self, data):
         token = SocialToken(
             token=data["access_token"],
@@ -95,6 +101,7 @@ class AppleOAuth2Adapter(OAuth2Adapter):
 
         return token
 
+    @snoop
     def complete_login(self, request, app, token, **kwargs):
         extra_data = token.user_data
         login = self.get_provider().sociallogin_from_response(
@@ -111,6 +118,7 @@ class AppleOAuth2Adapter(OAuth2Adapter):
 
         return login
 
+    @snoop
     def get_user_scope_data(self, request):
         user_scope_data = request.apple_login_session.get("user", "")
         try:
@@ -120,6 +128,7 @@ class AppleOAuth2Adapter(OAuth2Adapter):
             # so return blank dictionary instead
             return {}
 
+    @snoop
     def get_access_token_data(self, request, app, client):
         """ We need to gather the info from the apple specific login """
         add_apple_session(request)
@@ -136,6 +145,7 @@ class AppleOAuth2Adapter(OAuth2Adapter):
 
 
 @csrf_exempt
+@snoop
 def apple_post_callback(request, finish_endpoint_name="apple_finish_callback"):
     """
     Apple uses a `form_post` response type, which due to

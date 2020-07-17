@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from urllib.parse import parse_qsl, quote, urlencode
 
 import jwt
+import snoop
 
 from allauth.socialaccount.providers.oauth2.client import (
     OAuth2Client,
@@ -22,6 +23,7 @@ class AppleOAuth2Client(OAuth2Client):
         * requires special `client_secret` as JWT
     """
 
+    @snoop
     def generate_client_secret(self):
         """Create a JWT signed with an apple provided private key"""
         now = datetime.utcnow()
@@ -38,10 +40,12 @@ class AppleOAuth2Client(OAuth2Client):
         ).decode('utf-8')
         return client_secret
 
+    @snoop
     def get_client_id(self):
         """ We support multiple client_ids, but use the first one for api calls """
         return self.consumer_key.split(',')[0]
 
+    @snoop
     def get_access_token(self, code):
         url = self.access_token_url
         client_secret = self.generate_client_secret()
@@ -68,6 +72,7 @@ class AppleOAuth2Client(OAuth2Client):
             )
         return access_token
 
+    @snoop
     def get_redirect_url(self, authorization_url, extra_params):
         params = {
             'client_id': self.get_client_id(),

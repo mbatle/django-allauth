@@ -2,16 +2,18 @@ from allauth.account.models import EmailAddress
 from allauth.socialaccount.app_settings import QUERY_EMAIL
 from allauth.socialaccount.providers.base import ProviderAccount
 from allauth.socialaccount.providers.oauth2.provider import OAuth2Provider
-
+import snoop
 
 class AppleProvider(OAuth2Provider):
     id = 'apple'
     name = 'Apple'
     account_class = ProviderAccount
 
+    @snoop
     def extract_uid(self, data):
         return str(data['sub'])
 
+    @snoop
     def extract_common_fields(self, data):
         fields = {
             "email": data.get("email")
@@ -25,6 +27,7 @@ class AppleProvider(OAuth2Provider):
 
         return fields
 
+    @snoop
     def extract_email_addresses(self, data):
         ret = []
         email = data.get('email')
@@ -41,6 +44,7 @@ class AppleProvider(OAuth2Provider):
             )
         return ret
 
+    @snoop
     def get_default_scope(self):
         scopes = ["name"]
         if QUERY_EMAIL:

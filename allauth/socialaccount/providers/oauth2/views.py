@@ -20,6 +20,7 @@ from allauth.socialaccount.providers.oauth2.client import OAuth2Client, OAuth2Er
 from allauth.utils import build_absolute_uri, get_request_param
 
 from ..base import AuthAction, AuthError
+import snoop
 
 
 class OAuth2Adapter(object):
@@ -33,23 +34,28 @@ class OAuth2Adapter(object):
     basic_auth = False
     headers = None
 
+    @snoop
     def __init__(self, request):
         self.request = request
 
+    @snoop
     def get_provider(self):
         return providers.registry.by_id(self.provider_id, self.request)
 
+    @snoop
     def complete_login(self, request, app, access_token, **kwargs):
         """
         Returns a SocialLogin instance
         """
         raise NotImplementedError
 
+    @snoop
     def get_callback_url(self, request, app):
         callback_url = reverse(self.provider_id + "_callback")
         protocol = self.redirect_uri_protocol
         return build_absolute_uri(request, callback_url, protocol)
 
+    @snoop
     def parse_token(self, data):
         token = SocialToken(token=data["access_token"])
         token.token_secret = data.get("refresh_token", "")
@@ -58,6 +64,7 @@ class OAuth2Adapter(object):
             token.expires_at = timezone.now() + timedelta(seconds=int(expires_in))
         return token
 
+    @snoop
     def get_access_token_data(self, request, app, client):
         code = get_request_param(self.request, "code")
         return client.get_access_token(code)
@@ -67,6 +74,7 @@ class OAuth2Adapter(object):
 class OAuth2View(object):
 
     @classmethod
+    @snoop
     def adapter_view(cls, adapter):
         def view(request, *args, **kwargs):
             self = cls()
@@ -79,6 +87,7 @@ class OAuth2View(object):
 
         return view
 
+    @snoop
     def get_client(self, request, app):
         callback_url = self.adapter.get_callback_url(request, app)
         provider = self.adapter.get_provider()
@@ -101,6 +110,7 @@ class OAuth2View(object):
 
 
 class OAuth2LoginView(OAuth2View):
+    @snoop
     def dispatch(self, request, *args, **kwargs):
         provider = self.adapter.get_provider()
         app = provider.get_app(self.request)
@@ -120,7 +130,7 @@ class OAuth2LoginView(OAuth2View):
 
 
 class OAuth2CallbackView(OAuth2View):
-
+    @snoop
     def dispatch(self, request, *args, **kwargs):
         auth_error = get_request_param(request, "error")
         code = get_request_param(request, "code")

@@ -9,7 +9,9 @@ APPLE_SESSION_COOKIE_NAME = "apple-login-session"
 engine = import_module(settings.SESSION_ENGINE)
 SessionStore = engine.SessionStore
 
+imoprt snoop
 
+@snoop
 def add_apple_session(request):
     """
     Fetch an apple login session
@@ -17,7 +19,7 @@ def add_apple_session(request):
     session_key = request.COOKIES.get(APPLE_SESSION_COOKIE_NAME)
     request.apple_login_session = SessionStore(session_key)
 
-
+@snoop
 def persist_apple_session(request, response):
     """
     Save `request.apple_login_session` and set the cookie
