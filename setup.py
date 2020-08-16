@@ -124,6 +124,7 @@ METADATA = dict(
                       'requests',
                       'snoop',
                       'pyjwt[crypto] >=1.7'],
+    setup_requires=['wheel'],
     include_package_data=True,
     classifiers=[
         'Development Status :: 4 - Beta',
